@@ -85,15 +85,10 @@ Red wine:
 
 Notes:
 
-- Some input variables correlate with each other. They can cause troubles as well as improve performance. We should
-  **inspect them closer**. Namely: residual sugar (white wine); free sulfur dioxide (white wine); fixed acidity (red
+- Some input variables correlate with each other. They can cause troubles as well as improve performance. We should try
+  to **throw them away**. Namely: residual sugar (white wine); free sulfur dioxide (white wine); fixed acidity (red
   wine); free sulfur dioxide (red wine); pH (red wine).
 - Some input variables have very weak correlation with quality. They don't contribute to better results and are more
-  likely to cause high bias. But we should **investigate them** before throwing away. Namely: citric acid (white wine);
-  residual sugar (white wine); free sulfur dioxide (white wine); pH (white wine); sulphates (white wine); residual
-  sugar (red wine); free sulfur dioxide (red wine); pH (red wine).
-
-
-
-
-
+  likely to cause high bias. We should **try to throw them away**. Namely: citric acid (white wine); residual sugar (
+  white wine); free sulfur dioxide (white wine); pH (white wine); sulphates (white wine); residual sugar (red wine);
+  free sulfur dioxide (red wine); pH (red wine).
