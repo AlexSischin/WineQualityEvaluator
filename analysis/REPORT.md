@@ -66,12 +66,12 @@ Notes:
   set of input features. Therefore, we can improve red whine model using **transfer learning** from white wine model,
   since it has much more examples. We could also create a more complex model that evaluates quality for both types of
   wine, but it is pointless.
-- All the data is numerical which is very convenient because we don't have to encode categories, and we are less likely
-  to have extra bias because of outlier categories.
+- All the data is numerical which is very convenient because we **don't have to encode categories**, and we are less
+  likely to have extra bias because of outlier categories.
 - Dataset is not balanced, and some classes are even missing. This will hurt performance of our models very much and
   will make them harder to compare. Unfortunately, we can't collect or engineer more data. Therefore, in order to
-  compare models we will consider two metrics: F1 score and precision on classes missing in the training set. We might
-  want to add a more bias to models, in order to make them generalize better on unknown data.
+  compare models we will consider two metrics: **F1 score** and **precision on classes missing in the training set**. We
+  might want to add a more bias to models, in order to make them generalize better on unknown data.
 
 ## Correlation matrix
 
@@ -86,10 +86,10 @@ Red wine:
 Notes:
 
 - Some input variables correlate with each other. They can cause troubles as well as improve performance. We should
-  inspect them closer. Namely: residual sugar (white wine); free sulfur dioxide (white wine); fixed acidity (red wine);
-  free sulfur dioxide (red wine); pH (red wine).
+  **inspect them closer**. Namely: residual sugar (white wine); free sulfur dioxide (white wine); fixed acidity (red
+  wine); free sulfur dioxide (red wine); pH (red wine).
 - Some input variables have very weak correlation with quality. They don't contribute to better results and are more
-  likely to cause high bias. But we should investigate them before throwing away. Namely: citric acid (white wine);
+  likely to cause high bias. But we should **investigate them** before throwing away. Namely: citric acid (white wine);
   residual sugar (white wine); free sulfur dioxide (white wine); pH (white wine); sulphates (white wine); residual
   sugar (red wine); free sulfur dioxide (red wine); pH (red wine).
 
