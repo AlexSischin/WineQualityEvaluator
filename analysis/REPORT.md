@@ -4,7 +4,7 @@ Train models of white and red wine quality using _scikit learn_ and _Tensorflow_
 
 - Polynomial Regression
 - Softmax Regression
-- Dense Neural Network
+- Dense Neural Network (hereinafter: DNN)
 
 Try transfer learning to improve red wine model based on white wine model.
 
@@ -92,3 +92,19 @@ Notes:
   likely to cause high bias. We should **try to throw them away**. Namely: citric acid (white wine); residual sugar (
   white wine); free sulfur dioxide (white wine); pH (white wine); sulphates (white wine); residual sugar (red wine);
   free sulfur dioxide (red wine); pH (red wine).
+
+# Plan
+
+1. Train polynomial regression model for white wine
+2. Train softmax regression model
+3. Compare polynomial and softmax models
+4. Train a DNN for white wine
+5. Compare DNN with regression of choice (neural network must win this time)
+6. Train a DNN for red wine
+7. Train another DNN for red wine using transfer learning
+8. Compare DNNs for red wine
+
+Comparison will be based on performance on known categories and unknown categories. We will reserve 9th grade white wine
+for testing models on unknown data. They will not be used for training.
+The output layers for DNNs will be chosen based on which of the regression algorithms won. If it was softmax, then we'll
+use softmax, and if polynomial - we'll use ReLU.
