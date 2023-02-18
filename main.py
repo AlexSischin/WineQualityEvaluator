@@ -1,6 +1,6 @@
 import pandas as pd
 
-from analysis.analysis import analyze
+from analysis.analysis import analyze_white_wine, analyze_red_wine
 
 white_wine_file = 'dataset/winequality-white.csv'
 red_wine_file = 'dataset/winequality-red.csv'
@@ -16,8 +16,8 @@ def read_wine_data(filename):
 def main():
     w_wine_df = read_wine_data(white_wine_file)
     r_wine_df = read_wine_data(red_wine_file)
-    analyze(w_wine_df)
-    analyze(r_wine_df)
+    analyze_white_wine(w_wine_df)
+    analyze_red_wine(r_wine_df)
 
 
 if __name__ == '__main__':

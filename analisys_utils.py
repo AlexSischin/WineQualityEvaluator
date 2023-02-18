@@ -2,7 +2,7 @@ from numbers import Number
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from pandas import DataFrame, Series, Interval
 
 
@@ -14,17 +14,14 @@ def _int_interval_to_str(i: Interval):
     return f'({int(np.floor(i.left))},{int(np.floor(i.right))}]'
 
 
-def visualize_scatter(x: Series, y: Series, alpha=1):
-    fig, ax = plt.subplots()
+def visualize_scatter(ax: Axes, x: Series, y: Series, alpha=1):
     ax.set_title(f'{y.name} vs {x.name}')
     ax.set_xlabel(f'{x.name}')
     ax.set_ylabel(f'{y.name}')
     ax.scatter(x.to_numpy(), y.to_numpy(), marker='.', alpha=alpha)
-    return fig, ax
 
 
-def visualize_distribution(series: Series, categorical, bins=10, integer=True):
-    _, ax = plt.subplots()
+def visualize_distribution(ax: Axes, series: Series, categorical, bins=10, integer=True):
     ax.set_title(f'Distribution of {series.name}')
     ax.set_xlabel(f'{series.name}')
     ax.set_ylabel(f'Occurrences')
@@ -51,12 +48,10 @@ def visualize_distribution(series: Series, categorical, bins=10, integer=True):
     ax.set_xticks(x_numeric, x, rotation=90, ha='center')
 
 
-def visualize_correlation_matrix(corr: DataFrame):
-    fig, ax = plt.subplots()
+def visualize_correlation_matrix(ax: Axes, corr: DataFrame):
     ax.set_title('Correlation matrix')
     ax.matshow(corr, cmap='BrBG')
     ax.set_xticks(range(len(corr.columns)), corr.columns, rotation=90)
     ax.set_yticks(range(len(corr.columns)), corr.columns)
     for (i, j), z in np.ndenumerate(corr.to_numpy()):
         ax.text(j, i, '{:.2f}'.format(z), ha='center', va='center')
-    return fig, ax
