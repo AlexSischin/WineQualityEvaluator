@@ -14,6 +14,15 @@ def _int_interval_to_str(i: Interval):
     return f'({int(np.floor(i.left))},{int(np.floor(i.right))}]'
 
 
+def visualize_scatter(x: Series, y: Series, alpha=1):
+    fig, ax = plt.subplots()
+    ax.set_title(f'{y.name} vs {x.name}')
+    ax.set_xlabel(f'{x.name}')
+    ax.set_ylabel(f'{y.name}')
+    ax.scatter(x.to_numpy(), y.to_numpy(), marker='.', alpha=alpha)
+    return fig, ax
+
+
 def visualize_distribution(series: Series, categorical, bins=10, integer=True):
     _, ax = plt.subplots()
     ax.set_title(f'Distribution of {series.name}')
