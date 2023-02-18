@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-from analisys_utils import visualize_correlation_matrix, visualize_distribution, visualize_scatter
+from analysis_utils import visualize_correlation_matrix, visualize_distribution, visualize_scatter
 from columns import *
 
 
