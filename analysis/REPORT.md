@@ -34,6 +34,8 @@ Data columns (total 12 columns):
 dtypes: float64(11), int64(1)
 ```
 
+![img_2.png](img_2.png)
+
 Red whine:
 
 ```text
@@ -56,16 +58,20 @@ Data columns (total 12 columns):
 dtypes: float64(11), int64(1)
 ```
 
+![img_3.png](img_3.png)
+
 Notes:
 
 - Both tables have the same columns, therefore models for white and red wine are very likely to perform well on the same
   set of input features. Therefore, we can improve red whine model using **transfer learning** from white wine model,
   since it has much more examples. We could also create a more complex model that evaluates quality for both types of
   wine, but it is pointless.
-
 - All the data is numerical which is very convenient because we don't have to encode categories, and we are less likely
-  to
-  have extra bias because of outlier categories.
+  to have extra bias because of outlier categories.
+- Dataset is not balanced, and some classes are even missing. This will hurt performance of our models very much and
+  will make them harder to compare. Unfortunately, we can't collect or engineer more data. Therefore, in order to
+  compare models we will consider two metrics: F1 score and precision on classes missing in the training set. We might
+  want to add a more bias to models, in order to make them generalize better on unknown data.
 
 ## Correlation matrix
 
