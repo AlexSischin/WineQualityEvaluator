@@ -1,6 +1,5 @@
-import numpy as np
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 
 def read_data(filename: str, columns: list[str], sep=','):
@@ -11,7 +10,7 @@ def read_data(filename: str, columns: list[str], sep=','):
     return df
 
 
-def split_x_y(df: DataFrame, target_col: str) -> tuple[np.ndarray, np.ndarray]:
-    x = df.drop(columns=[target_col]).to_numpy()
-    y = df[target_col].to_numpy()
+def split_x_y(df: DataFrame, target_col: str) -> tuple[DataFrame, Series]:
+    x = df.drop(columns=[target_col])
+    y = df[target_col]
     return x, y
