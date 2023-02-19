@@ -172,4 +172,29 @@ in our model because it will have more parameters than the data, which leads to 
 features manually requires a lot of time and consulting with wine experts. So, in order to improve performance
 significantly, we have to **choose another model**. Let's move on to next one.
 
+## Training softmax regression
+
+Softmax regression is not much more complex than polynomial regression, but is a classification algorithm, which could
+perform better for this classification problem. The downside is that it doesn't take advantage from the linearity of
+classes. It's hard to tell, but we can assume that softmax regression will distinguish adjacent qualities better. On the
+other hand, it will sometimes give more random results.
+
+Features for softmax regression are likely to be the same as for polynomial regression, so let's skip this step and
+build the model immediately.
+
+![img_9.png](img_9.png)
+```text
+Function: train_logistic_regression
+```
+
+F1 and precision scores tell us about slight overfitting, so let's specify regularization parameter to 1, which is the
+default value.
+
+![img_10.png](img_10.png)
+
+As we expected, softmax regression performed a little better at distinguishing adjacent categories and gave little more
+random results. But the problem with **high bias remains**.
+
+
+
 

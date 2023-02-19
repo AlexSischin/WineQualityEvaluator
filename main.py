@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_squared_error, confusion_matrix, f1_score, precision_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
@@ -252,6 +252,64 @@ def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: Data
     plt.show()
 
 
+def train_logistic_regression(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    # Relevant columns
+    white_wine_cols = [
+        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
+        COL_DENSITY, COL_PH, COL_ALCOHOL,
+    ]
+
+    # Extract data arrays
+    train_x = train_x[white_wine_cols].to_numpy()
+    dev_x = dev_x[white_wine_cols].to_numpy()
+    train_y = train_y.to_numpy()
+    dev_y = dev_y.to_numpy()
+
+    # Add polynomial features
+    poly_features = PolynomialFeatures(degree=2, include_bias=False)
+    train_x = poly_features.fit_transform(train_x)
+    dev_x = poly_features.transform(dev_x)
+
+    # Scale features
+    w_wine_scaler = StandardScaler()
+    train_x = w_wine_scaler.fit_transform(train_x)
+    dev_x = w_wine_scaler.transform(dev_x)
+
+    # Train
+    model = LogisticRegression(C=1, max_iter=10000, solver='sag')
+    model.fit(train_x, train_y)
+
+    # Test
+    train_yhat = model.predict(train_x)
+    dev_yhat = model.predict(dev_x)
+
+    # Collect metrics
+    labels = np.arange(0, 11)
+    train_conf_mat = confusion_matrix(train_y, train_yhat, labels=labels)
+    dev_conf_mat = confusion_matrix(dev_y, dev_yhat, labels=labels)
+    train_f1_score = f1_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_f1_score = f1_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_precision_score = precision_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_precision_score = precision_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+
+    # Visualize
+    fig, ((train_cm_ax, dev_cm_ax), (train_score_ax, dev_score_ax)) = plt.subplots(2, 2, height_ratios=[10, 1])
+    visualize_confusion_matrix(train_cm_ax, train_conf_mat)
+    visualize_confusion_matrix(dev_cm_ax, dev_conf_mat)
+    train_cm_ax.set_title('Train dataset CM')
+    dev_cm_ax.set_title('Dev dataset CM')
+    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'], [f'{train_precision_score:.3f}']],
+                                       rowLabels=['F1-score', 'Precision score'], loc='center')
+    train_table.scale(0.7, 1)
+    train_score_ax.axis('off')
+    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'], [f'{dev_precision_score:.3f}']],
+                                   rowLabels=['F1-score', 'Precision score'], loc='center')
+    dev_table.scale(0.7, 1)
+    dev_score_ax.axis('off')
+
+    plt.show()
+
+
 def main():
     w_wine_train_df, w_wine_dev_df, w_wine_test_df = get_train_dev_test_white_wine()
 
@@ -261,7 +319,8 @@ def main():
 
     # compare_poly_degrees(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # compare_feature_sets(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
-    train_polynomial_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # train_polynomial_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    train_logistic_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
 
 
 if __name__ == '__main__':
