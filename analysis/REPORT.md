@@ -111,11 +111,11 @@ use softmax, and if polynomial - we'll use ReLU.
 
 ## Training polynomial regression
 
+![img_4.png](img_4.png)
+
 ```text
 Function: compare_poly_degrees
 ```
-
-![img_4.png](img_4.png)
 
 Degree greater than 2 causes both huge feature number and huge variance, so we'll definitely not use it. Let's zoom in
 anc compare 1st and 2nd degree polynomials.
@@ -129,6 +129,10 @@ degree polynomial without regularization.
 Next, let's try to get rid of features that highly correlate with others or almost don't correlate with quality.
 
 ![img_6.png](img_6.png)
+
+```text
+Function: compare_feature_sets
+```
 
 From the plot we can conclude:
 
@@ -145,5 +149,7 @@ Let's double-check our conclusions:
 
 Perfect. There was a tiny chance that residual sugar had synergy with free sulfur dioxide or citric acid params, but
 throwing them away didn't do anything bad.
+
+
 
 
