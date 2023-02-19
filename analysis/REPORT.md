@@ -96,7 +96,7 @@ Notes:
 # Plan
 
 1. Train polynomial regression model for white wine
-2. Train softmax regression model
+2. Train softmax regression model for white wine
 3. Compare polynomial and softmax models
 4. Train a DNN for white wine
 5. Compare DNN with regression of choice (neural network must win this time)
