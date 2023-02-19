@@ -126,3 +126,24 @@ Feature number is totally fine in both cases. MSE on dev dataset is practically 
 There may be a little overfitting with the second degree, but we cannot improve it drastically, so let's use second
 degree polynomial without regularization.
 
+Next, let's try to get rid of features that highly correlate with others or almost don't correlate with quality.
+
+![img_6.png](img_6.png)
+
+From the plot we can conclude:
+
+- **keep residual sugar**. Throwing it away increased bias even though it's correlation with quality is 0.01. Seems that
+  this parameter in combination with some other parameter gives better estimates.
+- **drop free sulfur dioxide**. It will decrease variance.
+- **drop citric acid**. It doesn't do anything, and it's better to keep model simple.
+- **keep pH**. It slightly decreases bias.
+- **drop sulphates**. It doesn't do anything, and it's better to keep model simple.
+
+Let's double-check our conclusions:
+
+![img_7.png](img_7.png)
+
+Perfect. There was a tiny chance that residual sugar had synergy with free sulfur dioxide or citric acid params, but
+throwing them away didn't do anything bad.
+
+

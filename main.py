@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
 from sklearn.linear_model import LinearRegression
@@ -112,6 +113,93 @@ def compare_poly_degrees(train_x: DataFrame, train_y: Series, dev_x: DataFrame, 
     plt.show()
 
 
+def compare_feature_sets(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    feature_sets = {
+        'all': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no residual sugar': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_CHLORIDES, COL_FREE_SULFUR_DIOXIDE,
+            COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no free sulfur dioxide': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no citric acid': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no pH': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no sulphates': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_ALCOHOL
+        ],
+        'optimal': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
+            COL_DENSITY, COL_PH, COL_ALCOHOL
+        ],
+    }
+
+    # Y to NumPY
+    train_y = train_y.to_numpy()
+    dev_y = dev_y.to_numpy()
+
+    feature_set_names = []
+    train_mse_list = []
+    dev_mse_list = []
+
+    for name, features in feature_sets.items():
+        # Filter columns
+        filtered_train_x = train_x[features]
+        filtered_dev_x = dev_x[features]
+
+        # X to NumPy
+        filtered_train_x = filtered_train_x.to_numpy()
+        filtered_dev_x = filtered_dev_x.to_numpy()
+
+        # Add polynomial features
+        poly_features = PolynomialFeatures(degree=2, include_bias=False)
+        filtered_train_x = poly_features.fit_transform(filtered_train_x)
+        filtered_dev_x = poly_features.transform(filtered_dev_x)
+
+        # Scale features
+        w_wine_scaler = StandardScaler()
+        filtered_train_x = w_wine_scaler.fit_transform(filtered_train_x)
+        filtered_dev_x = w_wine_scaler.transform(filtered_dev_x)
+
+        # Train
+        model = LinearRegression()
+        model.fit(filtered_train_x, train_y)
+
+        # Test
+        train_yhat = model.predict(filtered_train_x)
+        dev_yhat = model.predict(filtered_dev_x)
+        train_mse = mean_squared_error(train_y, train_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        feature_set_names.append(name)
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    fig, mse_ax = plt.subplots()
+    ind = np.arange(len(feature_set_names))
+    width = 0.3
+    mse_ax.set_title('MSE VS feature set')
+    mse_ax.set_xlabel('Feature set')
+    mse_ax.set_ylabel('MSE')
+    mse_ax.bar(ind, train_mse_list, width, label='Train MSE')
+    mse_ax.bar(ind + width, dev_mse_list, width, label='Dev MSE')
+    mse_ax.set_xticks(ind + width / 2, feature_set_names, rotation=20)
+    mse_ax.legend()
+    plt.show()
+
+
 def main():
     w_wine_train_df, w_wine_dev_df, w_wine_test_df = get_train_dev_test_white_wine()
 
@@ -119,7 +207,8 @@ def main():
     w_wine_dev_x, w_wine_dev_y = split_x_y(w_wine_dev_df, COL_QUALITY)
     w_wine_test_x, w_wine_test_y = split_x_y(w_wine_test_df, COL_QUALITY)
 
-    compare_poly_degrees(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # compare_poly_degrees(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    compare_feature_sets(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
 
 
 if __name__ == '__main__':
