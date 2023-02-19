@@ -183,6 +183,7 @@ Features for softmax regression are likely to be the same as for polynomial regr
 build the model immediately.
 
 ![img_9.png](img_9.png)
+
 ```text
 Function: train_logistic_regression
 ```
@@ -195,6 +196,27 @@ default value.
 As we expected, softmax regression performed a little better at distinguishing adjacent categories and gave little more
 random results. But the problem with **high bias remains**.
 
+## Polynomial regression VS softmax regression
 
+| Model                 | F1-score | Precision score |
+|-----------------------|----------|-----------------|
+| Polynomial regression | 0.491    | 0.540           |
+| Softmax regression    | 0.508    | 0.568           |
 
+Softmax regression has better F1-score and precision score. But it also made more random results and increased bias
+towards grades 5 and 6. Seems like makes fewer mistakes, but mistakes are bigger. Our metrics don't display this, so
+let's introduce decision MSE. Polynomial regression must have less MSE, because this is exactly the function it
+minimizes.
 
+For polynomial regression it is:
+
+![img_11.png](img_11.png)
+
+For softmax regression it is:
+
+![img_12.png](img_12.png)
+
+Indeed, polynomial regression outperformed softmax regression in this one even without regularization, and for wine
+quality evaluation this is more important than precision. If algorithm makes a mistake between 5 and 6, it's not as bad
+as mistake between 6 and 7. Softmax regression ignores this fact in favor of precision. For this reason we will
+**choose polynomial regression** over softmax regression.

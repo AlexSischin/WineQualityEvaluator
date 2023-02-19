@@ -233,6 +233,8 @@ def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: Data
     dev_f1_score = f1_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
     train_precision_score = precision_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
     dev_precision_score = precision_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_mse = mean_squared_error(train_y, train_yhat)
+    dev_mse = mean_squared_error(dev_y, dev_yhat)
 
     # Visualize
     fig, ((train_cm_ax, dev_cm_ax), (train_score_ax, dev_score_ax)) = plt.subplots(2, 2, height_ratios=[10, 1])
@@ -240,12 +242,16 @@ def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: Data
     visualize_confusion_matrix(dev_cm_ax, dev_conf_mat)
     train_cm_ax.set_title('Train dataset CM')
     dev_cm_ax.set_title('Dev dataset CM')
-    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'], [f'{train_precision_score:.3f}']],
-                                       rowLabels=['F1-score', 'Precision score'], loc='center')
+    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'],
+                                                 [f'{train_precision_score:.3f}'],
+                                                 [f'{train_mse:.3f}']],
+                                       rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
     train_table.scale(0.7, 1)
     train_score_ax.axis('off')
-    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'], [f'{dev_precision_score:.3f}']],
-                                   rowLabels=['F1-score', 'Precision score'], loc='center')
+    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'],
+                                             [f'{dev_precision_score:.3f}'],
+                                             [f'{dev_mse:.3f}']],
+                                   rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
     dev_table.scale(0.7, 1)
     dev_score_ax.axis('off')
 
@@ -291,6 +297,8 @@ def train_logistic_regression(train_x: DataFrame, train_y: Series, dev_x: DataFr
     dev_f1_score = f1_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
     train_precision_score = precision_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
     dev_precision_score = precision_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_mse = mean_squared_error(train_y, train_yhat)
+    dev_mse = mean_squared_error(dev_y, dev_yhat)
 
     # Visualize
     fig, ((train_cm_ax, dev_cm_ax), (train_score_ax, dev_score_ax)) = plt.subplots(2, 2, height_ratios=[10, 1])
@@ -298,12 +306,16 @@ def train_logistic_regression(train_x: DataFrame, train_y: Series, dev_x: DataFr
     visualize_confusion_matrix(dev_cm_ax, dev_conf_mat)
     train_cm_ax.set_title('Train dataset CM')
     dev_cm_ax.set_title('Dev dataset CM')
-    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'], [f'{train_precision_score:.3f}']],
-                                       rowLabels=['F1-score', 'Precision score'], loc='center')
+    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'],
+                                                 [f'{train_precision_score:.3f}'],
+                                                 [f'{train_mse:.3f}']],
+                                       rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
     train_table.scale(0.7, 1)
     train_score_ax.axis('off')
-    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'], [f'{dev_precision_score:.3f}']],
-                                   rowLabels=['F1-score', 'Precision score'], loc='center')
+    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'],
+                                             [f'{dev_precision_score:.3f}'],
+                                             [f'{dev_mse:.3f}']],
+                                   rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
     dev_table.scale(0.7, 1)
     dev_score_ax.axis('off')
 
