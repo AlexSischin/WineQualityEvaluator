@@ -55,3 +55,12 @@ def visualize_correlation_matrix(ax: Axes, corr: DataFrame):
     ax.set_yticks(range(len(corr.columns)), corr.columns)
     for (i, j), z in np.ndenumerate(corr.to_numpy()):
         ax.text(j, i, '{:.2f}'.format(z), ha='center', va='center')
+
+
+def visualize_confusion_matrix(ax: Axes, conf: np.ndarray):
+    ax.matshow(conf, cmap='PuBu')
+    ax.set_xlabel('Estimate')
+    ax.set_ylabel('Target')
+    for (i, j), z in np.ndenumerate(conf):
+        if z != 0:
+            ax.text(j, i, '{:.0f}'.format(z), ha='center', va='center')
