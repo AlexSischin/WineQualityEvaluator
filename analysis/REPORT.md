@@ -108,3 +108,21 @@ Comparison will be based on performance on known categories and unknown categori
 for testing models on unknown data. They will not be used for training.
 The output layers for DNNs will be chosen based on which of the regression algorithms won. If it was softmax, then we'll
 use softmax, and if polynomial - we'll use ReLU.
+
+## Training polynomial regression
+
+```text
+Function: compare_poly_degrees
+```
+
+![img_4.png](img_4.png)
+
+Degree greater than 2 causes both huge feature number and huge variance, so we'll definitely not use it. Let's zoom in
+anc compare 1st and 2nd degree polynomials.
+
+![img_5.png](img_5.png)
+
+Feature number is totally fine in both cases. MSE on dev dataset is practically the same for 1 and 2 degree polynomials.
+There may be a little overfitting with the second degree, but we cannot improve it drastically, so let's use second
+degree polynomial without regularization.
+
