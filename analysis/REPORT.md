@@ -150,6 +150,26 @@ Let's double-check our conclusions:
 Perfect. There was a tiny chance that residual sugar had synergy with free sulfur dioxide or citric acid params, but
 throwing them away didn't do anything bad.
 
+Now, let's test the performance of our model.
 
+![img_8.png](img_8.png)
+
+```text
+Function: train_polynomial_regression
+```
+
+Model evaluates wine quality with precision of 54.0%, which could be considered a good result given that MSE is only
+0.58, which means that the error is not greater than one grade in most cases. But the model generalizes poorly for
+wine of low and high quality, so we can and should do better.
+
+From the confusion matrix we can see that evaluations have a bias towards grades 5 and 6. And overall performance on the
+training and the dev set is practically the same. Therefore, we're dealing with the problem of a **high bias**.
+
+High bias implies that our model can't determine the correlation between input and target values well. In order to
+improve it, we have to increase the number of features. We can't get more relevant data on wine characteristics, so the
+only way to add features is to add more polynomials or fancy functions. We can't automatically pour any more polynomials
+in our model because it will have more parameters than the data, which leads to extreme overfitting. Engineering new
+features manually requires a lot of time and consulting with wine experts. So, in order to improve performance
+significantly, we have to **choose another model**. Let's move on to next one.
 
 
