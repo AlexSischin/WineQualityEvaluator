@@ -341,3 +341,23 @@ Therefore, we are going to **choose polynomial regression**.
 ## Polynomial regression for red wine
 
 Polynomial degree is going to 2 as it was for white wine. But the feature selection must be performed again.
+
+![img_20.png](img_20.png)
+
+```text
+Function: compare_feature_sets_red
+```
+
+Seems like all the features we found are redundant, but high variance could distort results, so let's use Ridge
+regression with polynomial features instead, which is essentially the Polynomial regression with normalization. I've
+played with regularization param and found value of 30 performing pretty good.
+
+![img_21.png](img_21.png)
+
+All of these features seem to not contribute to the result, so let's **drop all of them** for the sake of simplicity.
+Double-check:
+
+![img_22.png](img_22.png)
+
+Now, the variance is non-existent! Train MSE is even greater than the dev MSE, so we're rather lucky to get such low
+variance. However, at this point it makes sense to try lower regularization params.

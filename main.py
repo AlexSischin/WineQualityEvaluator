@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from pandas import DataFrame, Series
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.metrics import mean_squared_error, confusion_matrix, f1_score, precision_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
@@ -22,18 +22,8 @@ white_wine_cols = [
 ]
 
 red_wine_cols = [
-    COL_FIXED_ACIDITY,
-    COL_VOLATILE_ACIDITY,
-    COL_CITRIC_ACID,
-    COL_RESIDUAL_SIGAR,
-    COL_CHLORIDES,
-    COL_FREE_SULFUR_DIOXIDE,
-    COL_TOTAL_SULFUR_DIOXIDE,
-    COL_DENSITY,
-    COL_PH,
-    COL_SULPHATES,
-    COL_ALCOHOL,
-    COL_QUALITY
+    COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_SULPHATES,
+    COL_ALCOHOL
 ]
 
 
@@ -53,6 +43,13 @@ def get_train_dev_test_white_wine():
     w_wine_dev_df = pd.concat([w_wine_not9_dev_df, wine9_dev], axis=0)
     w_wine_test_df = pd.concat([w_wine_not9_test_df, wine9_test], axis=0)
     return w_wine_train_df, w_wine_dev_df, w_wine_test_df
+
+
+def get_train_dev_test_red_wine():
+    all_wine = read_data(red_wine_file, sep=';', random_state=123)
+    r_wine_train_df, r_wine_dev_test = train_test_split(all_wine, test_size=0.6, shuffle=False)
+    r_wine_dev_df, r_wine_test_df = train_test_split(r_wine_dev_test, test_size=0.5, shuffle=False)
+    return r_wine_train_df, r_wine_dev_df, r_wine_test_df
 
 
 def compare_poly_degrees(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
@@ -568,12 +565,81 @@ def train_neural_network(train_x: DataFrame, train_y: Series, dev_x: DataFrame, 
     plt.show()
 
 
+def compare_feature_sets_red(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    feature_sets = {
+        'all': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no fixed acidity': [
+            COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_FREE_SULFUR_DIOXIDE,
+            COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no free sulfur dioxide': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no pH': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_RESIDUAL_SIGAR, COL_CHLORIDES,
+            COL_FREE_SULFUR_DIOXIDE, COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'no residual sugar': [
+            COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_CITRIC_ACID, COL_CHLORIDES, COL_FREE_SULFUR_DIOXIDE,
+            COL_TOTAL_SULFUR_DIOXIDE, COL_DENSITY, COL_PH, COL_SULPHATES, COL_ALCOHOL
+        ],
+        'optimal': red_wine_cols
+    }
+
+    # Y to NumPY
+    train_y = train_y.to_numpy()
+    dev_y = dev_y.to_numpy()
+
+    feature_set_names = []
+    train_mse_list = []
+    dev_mse_list = []
+
+    for name, features in feature_sets.items():
+        # Get arrays from df
+        filtered_train_x, filtered_dev_x = _get_x_arrays(train_x, dev_x, relevant_columns=features)
+
+        # Train
+        model = Ridge(alpha=30)
+        model.fit(filtered_train_x, train_y)
+
+        # Test
+        train_yhat = model.predict(filtered_train_x)
+        dev_yhat = model.predict(filtered_dev_x)
+        train_mse = mean_squared_error(train_y, train_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        feature_set_names.append(name)
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    fig, mse_ax = plt.subplots()
+    ind = np.arange(len(feature_set_names))
+    width = 0.3
+    mse_ax.set_title('MSE VS feature set')
+    mse_ax.set_xlabel('Feature set')
+    mse_ax.set_ylabel('MSE')
+    mse_ax.bar(ind, train_mse_list, width, label='Train MSE')
+    mse_ax.bar(ind + width, dev_mse_list, width, label='Dev MSE')
+    mse_ax.set_xticks(ind + width / 2, feature_set_names, rotation=20)
+    mse_ax.legend()
+    plt.show()
+
+
 def main():
     w_wine_train_df, w_wine_dev_df, w_wine_test_df = get_train_dev_test_white_wine()
+    r_wine_train_df, r_wine_dev_df, r_wine_test_df = get_train_dev_test_red_wine()
 
     w_wine_train_x, w_wine_train_y = split_x_y(w_wine_train_df, COL_QUALITY)
     w_wine_dev_x, w_wine_dev_y = split_x_y(w_wine_dev_df, COL_QUALITY)
     w_wine_test_x, w_wine_test_y = split_x_y(w_wine_test_df, COL_QUALITY)
+    r_wine_train_x, r_wine_train_y = split_x_y(r_wine_train_df, COL_QUALITY)
+    r_wine_dev_x, r_wine_dev_y = split_x_y(r_wine_dev_df, COL_QUALITY)
+    r_wine_test_x, r_wine_test_y = split_x_y(r_wine_test_df, COL_QUALITY)
 
     # compare_poly_degrees(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # compare_feature_sets(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
@@ -582,7 +648,9 @@ def main():
     # compare_neural_networks(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # plot_mse_vs_reg_param(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # plot_mse_vs_train_data_size(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
-    train_neural_network(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # train_neural_network(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+
+    compare_feature_sets_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
 
 
 if __name__ == '__main__':
