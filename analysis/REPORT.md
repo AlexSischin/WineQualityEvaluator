@@ -327,6 +327,13 @@ Tests:
 Function: train_neural_network
 ```
 
+## DNN vs. polynomial regression
 
+| Model                 | F1-score | Precision score | Mean squared error |
+|-----------------------|----------|-----------------|--------------------|
+| Polynomial regression | 0.491    | 0.540           | 0.648              |
+| Dense neural network  | 0.511    | 0.550           | 0.637              |
 
-
+DNN performed better than polynomial regression by all parameters, but the difference is very small, in contrast with
+much greater complexity of the DNN. On the other hand, behaviour of polynomial regression is much easier to interpret.
+Therefore, we are going to **choose polynomial regression**.
