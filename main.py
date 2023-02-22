@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from pandas import DataFrame, Series
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_squared_error, confusion_matrix, f1_score, precision_score
@@ -186,6 +187,44 @@ def compare_feature_sets(train_x: DataFrame, train_y: Series, dev_x: DataFrame, 
     plt.show()
 
 
+def _get_x_arrays(train_x: DataFrame, *args: DataFrame) -> tuple[np.ndarray, ...]:
+    # Relevant columns
+    white_wine_cols = [
+        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
+        COL_DENSITY, COL_PH, COL_ALCOHOL,
+    ]
+
+    poly_features = PolynomialFeatures(degree=2, include_bias=False)
+    w_wine_scaler = StandardScaler()
+
+    train_x = train_x[white_wine_cols].to_numpy()
+    train_x = poly_features.fit_transform(train_x)
+    train_x = w_wine_scaler.fit_transform(train_x)
+
+    other_x_list = []
+
+    for x in args:
+        x = x[white_wine_cols].to_numpy()
+        x = poly_features.transform(x)
+        x = w_wine_scaler.transform(x)
+        other_x_list.append(x)
+
+    return train_x, *other_x_list
+
+
+def _get_y_arrays(y: Series, *args: Series) -> tuple[np.ndarray, ...]:
+    return y.to_numpy(), *[a.to_numpy() for a in args]
+
+
+def _get_estimates(yhat: np.ndarray, *args: np.ndarray) -> tuple[np.ndarray, ...]:
+    yhat_list = []
+    for y in [yhat] + list(args):
+        y = (y + .5).astype(int)
+        y[y > 10] = 10
+        yhat_list.append(y)
+    return yhat_list[0], *yhat_list[1:]
+
+
 def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
     # Relevant columns
     white_wine_cols = [
@@ -322,6 +361,263 @@ def train_logistic_regression(train_x: DataFrame, train_y: Series, dev_x: DataFr
     plt.show()
 
 
+def compare_neural_networks(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    # Models to compare
+    reg_param = 0.01
+    models = {
+        'C1': tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+        ]),
+        'C2': tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+        ]),
+        'C3': tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=44, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+        ]),
+        'C4': tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=176, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=176, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+        ]),
+    }
+
+    # Filtering columns
+    white_wine_cols = [
+        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
+        COL_DENSITY, COL_PH, COL_ALCOHOL,
+    ]
+    train_x = train_x[white_wine_cols]
+    dev_x = dev_x[white_wine_cols]
+
+    # Convert to NumPy
+    train_x = train_x.to_numpy()
+    train_y = train_y.to_numpy()
+    dev_x = dev_x.to_numpy()
+    dev_y = dev_y.to_numpy()
+
+    # Add polynomial features
+    poly_features = PolynomialFeatures(degree=2, include_bias=False)
+    train_x = poly_features.fit_transform(train_x)
+    dev_x = poly_features.transform(dev_x)
+
+    # Scale features
+    w_wine_scaler = StandardScaler()
+    train_x = w_wine_scaler.fit_transform(train_x)
+    dev_x = w_wine_scaler.transform(dev_x)
+
+    model_name_list = []
+    train_mse_list = []
+    dev_mse_list = []
+
+    for name, model in models.items():
+        # Train
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss=tf.keras.losses.MeanSquaredError()
+        )
+        model.fit(train_x, train_y, epochs=100)
+
+        # Test
+        train_yhat = model.predict(train_x)
+        dev_yhat = model.predict(dev_x)
+
+        # Convert estimates to decisions
+        train_yhat = (train_yhat + .5).astype(int)
+        train_yhat[train_yhat > 10] = 10
+        dev_yhat = (dev_yhat + .5).astype(int)
+        dev_yhat[dev_yhat > 10] = 10
+
+        # Metrics
+        train_mse = mean_squared_error(train_y, train_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        model_name_list.append(name)
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    # Visualize
+    fig, mse_ax = plt.subplots()
+    ind = np.arange(len(model_name_list))
+    width = 0.3
+    mse_ax.set_title('MSE VS configuration')
+    mse_ax.set_xlabel('Configuration')
+    mse_ax.set_ylabel('MSE')
+    mse_ax.bar(ind, train_mse_list, width, label='Train MSE')
+    mse_ax.bar(ind + width, dev_mse_list, width, label='Dev MSE')
+    mse_ax.set_xticks(ind + width / 2, model_name_list, rotation=20)
+    mse_ax.legend()
+    plt.show()
+
+
+def plot_mse_vs_reg_param(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    train_x, dev_x = _get_x_arrays(train_x, dev_x)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
+
+    reg_params = np.arange(0.0, 0.03, 0.002)
+    train_mse_list = []
+    dev_mse_list = []
+
+    for reg_param in reg_params:
+        # Define model
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(reg_param)),
+        ])
+
+        # Train
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss=tf.keras.losses.MeanSquaredError()
+        )
+        model.fit(train_x, train_y, epochs=100)
+
+        # Test
+        train_yhat = model.predict(train_x)
+        dev_yhat = model.predict(dev_x)
+
+        # Get metrics
+        train_yhat, dev_yhat = _get_estimates(train_yhat, dev_yhat)
+        train_mse = mean_squared_error(train_y, train_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    # Plot
+    fig, ax = plt.subplots()
+    ax.set_title('MSE vs. regularization param')
+    ax.set_xlabel('Regularization param')
+    ax.set_ylabel('MSE')
+    ax.plot(reg_params, np.array(train_mse_list), label='Train MSE', marker='.')
+    ax.plot(reg_params, np.array(dev_mse_list), label='Dev MSE', marker='.')
+    plt.show()
+
+
+def plot_mse_vs_train_data_size(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    # Prepare dataset
+    train_x, dev_x = _get_x_arrays(train_x, dev_x)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
+
+    train_size_total = train_x.shape[0]
+    data_set_sizes = np.linspace(0, train_size_total, 20)[1:] - 1
+    train_mse_list = []
+    dev_mse_list = []
+
+    for size in data_set_sizes:
+        # Define model
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=44),
+            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+            tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+        ])
+
+        # Train
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss=tf.keras.losses.MeanSquaredError()
+        )
+
+        train_sub_x, _, train_sub_y, _ = train_test_split(train_x, train_y, train_size=(size / train_size_total))
+        model.fit(train_sub_x, train_sub_y, epochs=100)
+
+        # Test
+        train_sub_yhat = model.predict(train_sub_x)
+        dev_yhat = model.predict(dev_x)
+
+        # Get metrics
+        train_sub_yhat, dev_yhat = _get_estimates(train_sub_yhat, dev_yhat)
+        train_mse = mean_squared_error(train_sub_y, train_sub_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    # Plot
+    fig, ax = plt.subplots()
+    ax.set_title('MSE vs. train data size')
+    ax.set_xlabel('Train data size')
+    ax.set_ylabel('MSE')
+    ax.plot(data_set_sizes, np.array(train_mse_list), label='Train MSE', marker='.')
+    ax.plot(data_set_sizes, np.array(dev_mse_list), label='Dev MSE', marker='.')
+    ax.legend()
+    plt.show()
+
+
+def train_neural_network(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    # Prepare dataset
+    train_x, dev_x = _get_x_arrays(train_x, dev_x)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
+
+    # Define model
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=44),
+        tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+        tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+        tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+    ])
+
+    # Train
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        loss=tf.keras.losses.MeanSquaredError()
+    )
+    model.fit(train_x, train_y, epochs=100)
+
+    # Test
+    train_yhat = model.predict(train_x)
+    dev_yhat = model.predict(dev_x)
+
+    # Get metrics
+    train_yhat, dev_yhat = _get_estimates(train_yhat, dev_yhat)
+    labels = np.arange(0, 11)
+    train_conf_mat = confusion_matrix(train_y, train_yhat, labels=labels)
+    dev_conf_mat = confusion_matrix(dev_y, dev_yhat, labels=labels)
+    train_f1_score = f1_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_f1_score = f1_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_precision_score = precision_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_precision_score = precision_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_mse = mean_squared_error(train_y, train_yhat)
+    dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+    # Visualize
+    fig, ((train_cm_ax, dev_cm_ax), (train_score_ax, dev_score_ax)) = plt.subplots(2, 2, height_ratios=[10, 1])
+    visualize_confusion_matrix(train_cm_ax, train_conf_mat)
+    visualize_confusion_matrix(dev_cm_ax, dev_conf_mat)
+    train_cm_ax.set_title('Train dataset CM')
+    dev_cm_ax.set_title('Dev dataset CM')
+    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'],
+                                                 [f'{train_precision_score:.3f}'],
+                                                 [f'{train_mse:.3f}']],
+                                       rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
+    train_table.scale(0.7, 1)
+    train_score_ax.axis('off')
+    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'],
+                                             [f'{dev_precision_score:.3f}'],
+                                             [f'{dev_mse:.3f}']],
+                                   rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
+    dev_table.scale(0.7, 1)
+    dev_score_ax.axis('off')
+
+    plt.show()
+
+
 def main():
     w_wine_train_df, w_wine_dev_df, w_wine_test_df = get_train_dev_test_white_wine()
 
@@ -332,7 +628,11 @@ def main():
     # compare_poly_degrees(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # compare_feature_sets(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # train_polynomial_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
-    train_logistic_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # train_logistic_regression(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # compare_neural_networks(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # plot_mse_vs_reg_param(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    # plot_mse_vs_train_data_size(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
+    train_neural_network(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
 
 
 if __name__ == '__main__':

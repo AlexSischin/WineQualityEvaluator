@@ -220,3 +220,104 @@ Indeed, polynomial regression outperformed softmax regression in this one even w
 quality evaluation this is more important than precision. If algorithm makes a mistake between 5 and 6, it's not as bad
 as mistake between 6 and 7. Softmax regression ignores this fact in favor of precision. For this reason we will
 **choose polynomial regression** over softmax regression.
+
+## Training DNN
+
+Neural network is a low-bias machine, so it must vastly improve predictions. It will use the same features as before.
+We will choose between the following configurations:
+
+**C1**
+
+1. Input; 44 units
+2. Dense; 88 units; ReLU
+3. Dense; 352 units; ReLU
+4. Dense; 1 units; ReLU
+
+**C2**
+
+1. Input; 44 units
+2. Dense; 352 units; ReLU
+3. Dense; 88 units; ReLU
+4. Dense; 1 unit; ReLU
+
+**C3**
+
+1. Input; 44 units
+2. Dense; 88 units; ReLU
+3. Dense; 44 units; ReLU
+4. Dense; 88 units; ReLU
+5. Dense; 1 unit; ReLU
+
+**C4**
+
+1. Input; 44 units
+2. Dense; 176 units; ReLU
+3. Dense; 176 units; ReLU
+4. Dense; 1 unit; ReLU
+
+Training results:
+
+![img_13.png](img_13.png)
+
+```text
+Function: compare_neural_networks
+```
+
+_Note: MSE is calculated on rounded results, so it's comparable with classification algorithms._
+
+It's an obvious overfitting. C1 model seems to fit the training set better than others. We can assume that after
+applying L2 regularization, it will perform better on the dev test too. But let's check this assumption.
+
+![img_14.png](img_14.png)
+
+Models perform pretty much the same for any regularization param. Picking sufficient regularization param (0.01) causes
+the same high bias problem we had with our regressions. If it is lower, we get high variance problem. Let's choose C1
+and investigate it. First, let's double-check that we've chosen a correct regularization param.
+
+![img_15.png](img_15.png)
+
+```text
+Function: plot_mse_vs_reg_param
+```
+
+From this plot we conclude that regularization params between 0.005 and 0.01 are reasonable. Now, let's plot the
+learning curve.
+
+![img_18.png](img_18.png)
+
+```text
+Function: plot_mse_vs_train_data_size
+```
+
+Learning curves converge and flatten out as we add more training examples, so adding even more examples won't change
+anything. Indeed, we deal with a high bias.
+
+We have the following options how to lower bias:
+
+1. Collect or engineer fore features.
+2. Make model more complex to fit existing features better.
+
+First option is not really an option because we don't have a customer that could provide more relevant data, and it's
+impossible to engineer features since nobody knows how exactly physicochemical properties of wine are related to taste.
+
+Second option would lead to high variance. We already saw that lower regularization param do worse job. Adding more
+layers and neurons is practically the same as lowering regularization param, because with low regularization param the
+model fits training set well, i.e. it is complex enough to fit the data. In theory, it may be possible to build an
+enormous model that would estimate wine just looking at the data we're provided. But to train such model we would need
+an enormous amount of data as well. It's more likely that having more relevant information about white wine would help
+much more.
+
+Thus, we conclude that in order to noticeably improve white wine quality estimates, **we need to know more about
+properties of wine** to evaluate.
+
+Tests:
+
+![img_17.png](img_17.png)
+
+```text
+Function: train_neural_network
+```
+
+
+
+
