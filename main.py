@@ -522,9 +522,9 @@ def plot_mse_vs_train_data_size(train_x: DataFrame, train_y: Series, dev_x: Data
         # Define model
         model = tf.keras.Sequential([
             tf.keras.layers.Input(shape=44),
-            tf.keras.layers.Dense(units=88, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
-            tf.keras.layers.Dense(units=352, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
-            tf.keras.layers.Dense(units=1, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.01)),
+            tf.keras.layers.Dense(units=88, activation='relu'),
+            tf.keras.layers.Dense(units=352, activation='relu'),
+            tf.keras.layers.Dense(units=1, activation='relu'),
         ])
 
         # Train

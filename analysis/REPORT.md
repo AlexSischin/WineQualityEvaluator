@@ -300,12 +300,21 @@ We have the following options how to lower bias:
 First option is not really an option because we don't have a customer that could provide more relevant data, and it's
 impossible to engineer features since nobody knows how exactly physicochemical properties of wine are related to taste.
 
-Second option would lead to high variance. We already saw that lower regularization param do worse job. Adding more
-layers and neurons is practically the same as lowering regularization param, because with low regularization param the
-model fits training set well, i.e. it is complex enough to fit the data. In theory, it may be possible to build an
-enormous model that would estimate wine just looking at the data we're provided. But to train such model we would need
-an enormous amount of data as well. It's more likely that having more relevant information about white wine would help
-much more.
+Adding more layers and neurons has practically the same effect as lowering regularization param, because with low
+regularization param our model fits training set well, i.e. it is complex enough to fit the data. And we saw that
+lowering regularization leads to high variance.
+
+We cannot set low regularization and then fix high variance problem by adding more data either. It can be seen if we
+plot MSE against training set size:
+
+![img_19.png](img_19.png)
+
+_Note: MSE leap in the beginning happened because Z was below 0 in the output layer. ReLU derivative is 0 for Z < 0,
+therefore gradient was 0 for every param. This event is random and caused by initial params given by Tensorflow. It is
+not a problem, I just randomly found it and wanted to show._
+
+Dev MSE curve decreases much slower than train MSE curve. It's very likely that if we continue to enlarge training set
+these curves will converge somewhere around 0.6, which is almost the same accuracy we had before.
 
 Thus, we conclude that in order to noticeably improve white wine quality estimates, **we need to know more about
 properties of wine** to evaluate.
