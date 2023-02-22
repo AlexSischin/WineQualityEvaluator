@@ -15,6 +15,12 @@ from data_utils import read_data, split_x_y
 white_wine_file = 'dataset/winequality-white.csv'
 red_wine_file = 'dataset/winequality-red.csv'
 
+# Relevant columns
+white_wine_cols = [
+    COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
+    COL_DENSITY, COL_PH, COL_ALCOHOL,
+]
+
 red_wine_cols = [
     COL_FIXED_ACIDITY,
     COL_VOLATILE_ACIDITY,
@@ -141,23 +147,8 @@ def compare_feature_sets(train_x: DataFrame, train_y: Series, dev_x: DataFrame, 
     dev_mse_list = []
 
     for name, features in feature_sets.items():
-        # Filter columns
-        filtered_train_x = train_x[features]
-        filtered_dev_x = dev_x[features]
-
-        # X to NumPy
-        filtered_train_x = filtered_train_x.to_numpy()
-        filtered_dev_x = filtered_dev_x.to_numpy()
-
-        # Add polynomial features
-        poly_features = PolynomialFeatures(degree=2, include_bias=False)
-        filtered_train_x = poly_features.fit_transform(filtered_train_x)
-        filtered_dev_x = poly_features.transform(filtered_dev_x)
-
-        # Scale features
-        w_wine_scaler = StandardScaler()
-        filtered_train_x = w_wine_scaler.fit_transform(filtered_train_x)
-        filtered_dev_x = w_wine_scaler.transform(filtered_dev_x)
+        # Get arrays from df
+        filtered_train_x, filtered_dev_x = _get_x_arrays(train_x, dev_x, relevant_columns=features)
 
         # Train
         model = LinearRegression()
@@ -187,24 +178,21 @@ def compare_feature_sets(train_x: DataFrame, train_y: Series, dev_x: DataFrame, 
     plt.show()
 
 
-def _get_x_arrays(train_x: DataFrame, *args: DataFrame) -> tuple[np.ndarray, ...]:
-    # Relevant columns
-    white_wine_cols = [
-        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
-        COL_DENSITY, COL_PH, COL_ALCOHOL,
-    ]
+def _get_x_arrays(train_x: DataFrame, *args: DataFrame, relevant_columns=None) -> tuple[np.ndarray, ...]:
+    if relevant_columns is None:
+        relevant_columns = white_wine_cols
 
     poly_features = PolynomialFeatures(degree=2, include_bias=False)
     w_wine_scaler = StandardScaler()
 
-    train_x = train_x[white_wine_cols].to_numpy()
+    train_x = train_x[relevant_columns].to_numpy()
     train_x = poly_features.fit_transform(train_x)
     train_x = w_wine_scaler.fit_transform(train_x)
 
     other_x_list = []
 
     for x in args:
-        x = x[white_wine_cols].to_numpy()
+        x = x[relevant_columns].to_numpy()
         x = poly_features.transform(x)
         x = w_wine_scaler.transform(x)
         other_x_list.append(x)
@@ -227,14 +215,14 @@ def _get_estimates(yhat: np.ndarray, *args: np.ndarray) -> tuple[np.ndarray, ...
 
 def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
     # Relevant columns
-    white_wine_cols = [
+    relevant_columns = [
         COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
         COL_DENSITY, COL_PH, COL_ALCOHOL,
     ]
 
     # Extract data arrays
-    train_x = train_x[white_wine_cols].to_numpy()
-    dev_x = dev_x[white_wine_cols].to_numpy()
+    train_x = train_x[relevant_columns].to_numpy()
+    dev_x = dev_x[relevant_columns].to_numpy()
     train_y = train_y.to_numpy()
     dev_y = dev_y.to_numpy()
 
@@ -298,27 +286,9 @@ def train_polynomial_regression(train_x: DataFrame, train_y: Series, dev_x: Data
 
 
 def train_logistic_regression(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
-    # Relevant columns
-    white_wine_cols = [
-        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
-        COL_DENSITY, COL_PH, COL_ALCOHOL,
-    ]
-
-    # Extract data arrays
-    train_x = train_x[white_wine_cols].to_numpy()
-    dev_x = dev_x[white_wine_cols].to_numpy()
-    train_y = train_y.to_numpy()
-    dev_y = dev_y.to_numpy()
-
-    # Add polynomial features
-    poly_features = PolynomialFeatures(degree=2, include_bias=False)
-    train_x = poly_features.fit_transform(train_x)
-    dev_x = poly_features.transform(dev_x)
-
-    # Scale features
-    w_wine_scaler = StandardScaler()
-    train_x = w_wine_scaler.fit_transform(train_x)
-    dev_x = w_wine_scaler.transform(dev_x)
+    # Get arrays from df
+    train_x, dev_x = _get_x_arrays(train_x, dev_x)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
 
     # Train
     model = LogisticRegression(C=1, max_iter=10000, solver='sag')
@@ -392,29 +362,9 @@ def compare_neural_networks(train_x: DataFrame, train_y: Series, dev_x: DataFram
         ]),
     }
 
-    # Filtering columns
-    white_wine_cols = [
-        COL_FIXED_ACIDITY, COL_VOLATILE_ACIDITY, COL_RESIDUAL_SIGAR, COL_CHLORIDES, COL_TOTAL_SULFUR_DIOXIDE,
-        COL_DENSITY, COL_PH, COL_ALCOHOL,
-    ]
-    train_x = train_x[white_wine_cols]
-    dev_x = dev_x[white_wine_cols]
-
-    # Convert to NumPy
-    train_x = train_x.to_numpy()
-    train_y = train_y.to_numpy()
-    dev_x = dev_x.to_numpy()
-    dev_y = dev_y.to_numpy()
-
-    # Add polynomial features
-    poly_features = PolynomialFeatures(degree=2, include_bias=False)
-    train_x = poly_features.fit_transform(train_x)
-    dev_x = poly_features.transform(dev_x)
-
-    # Scale features
-    w_wine_scaler = StandardScaler()
-    train_x = w_wine_scaler.fit_transform(train_x)
-    dev_x = w_wine_scaler.transform(dev_x)
+    # Get arrays from df
+    train_x, dev_x = _get_x_arrays(train_x, dev_x)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
 
     model_name_list = []
     train_mse_list = []

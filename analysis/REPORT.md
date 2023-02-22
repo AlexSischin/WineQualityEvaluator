@@ -337,3 +337,7 @@ Function: train_neural_network
 DNN performed better than polynomial regression by all parameters, but the difference is very small, in contrast with
 much greater complexity of the DNN. On the other hand, behaviour of polynomial regression is much easier to interpret.
 Therefore, we are going to **choose polynomial regression**.
+
+## Polynomial regression for red wine
+
+Polynomial degree is going to 2 as it was for white wine. But the feature selection must be performed again.
