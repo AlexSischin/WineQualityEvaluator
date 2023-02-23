@@ -380,3 +380,38 @@ properties we have and quality, as the white wine.
 
 Also, it doesn't make sense to apply transfer learning. Using transfer learning is similar to using more training
 examples. It could only help with high variance, but the variance of red wine model is excellent.
+
+# Test (fair)
+
+White wine polynomial regression model:
+
+![img_25.png](img_25.png)
+
+Red wine polynomial regression model:
+
+![img_26.png](img_26.png)
+
+# Conclusion
+
+We've developed polynomial regression, softmax regression and dense neural network models for white wine. Softmax
+regression appeared to be more precise than polynomial regression, but MSE of polynomial regression was lower, which is
+more important in terms of evaluating quality. Neural network had the best precision and MSE, but its results are
+much harder to interpret, so we ended up choosing polynomial regression for classifying white wine quality. It has
+precision of 0.525 and error of 0.646. In simple terms these characteristics mean that model evaluates wine quality
+correctly in 52.5% cases, and if a mistake happens, it is only 1 grade in most cases.
+
+Also, we've trained a polynomial regression model for red wine. It has precision of 0.634 and MSE of 0.479. In simple
+terms these characteristics mean that model evaluates wine quality correctly in 63.4% cases, and if a mistake happens,
+it is only 1 grade in most cases.
+
+**The models we've trained can help us determine how physio-chemical properties of white and red wine affect quality,
+and thus, optimize wine production**. It's still possible to make these models more precise. To do this, we need more
+information on properties of wine and more examples of low and high quality wine.
+
+_Note: collecting more training examples of low and high quality wine would help us determine link between properties
+and quality of wine and also would help predicting quality of low and high quality wine. But, the precision and MSE
+would become worse._
+
+Also, we could slightly improve performance using other machine learning algorithms, such as multiple regression and
+support vector regression, but this is out of our scope. We've accomplished all the goals of this project, except using
+transfer learning. Transfer learning appeared to be needless, because red wine model under-fits data.

@@ -742,7 +742,10 @@ def main():
 
     # compare_feature_sets_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
     # plot_mse_vs_reg_param_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
-    train_polynomial_regression_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
+    # train_polynomial_regression_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
+
+    train_polynomial_regression(w_wine_train_x, w_wine_train_y, w_wine_test_x, w_wine_test_y)
+    train_polynomial_regression_red(r_wine_train_x, r_wine_train_y, r_wine_test_x, r_wine_test_y)
 
 
 if __name__ == '__main__':
