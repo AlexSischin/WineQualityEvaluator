@@ -419,3 +419,9 @@ would become worse._
 Also, we could slightly improve performance using other machine learning algorithms, such as multiple regression and
 support vector regression, but this is out of our scope. We've accomplished all the goals of this project, except using
 transfer learning. Transfer learning appeared to be needless, because red wine model under-fits data.
+
+Want to mention that I've made a lot of assumptions that DNN would perform significantly better than regressions, but I
+was wrong. These assumptions were made based on another assumption that data is highly correlated with wine quality,
+which appeared to be not the case. Estimates will always have an error if there's a random component in predictions, no
+matter how complicated algorithm is. And the correlation appeared to be simple enough for regression models, so using a
+NN is excessive.
