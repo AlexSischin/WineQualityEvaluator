@@ -630,6 +630,96 @@ def compare_feature_sets_red(train_x: DataFrame, train_y: Series, dev_x: DataFra
     plt.show()
 
 
+def plot_mse_vs_reg_param_red(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    train_x, dev_x = _get_x_arrays(train_x, dev_x, relevant_columns=red_wine_cols)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
+
+    reg_params = np.arange(0.0, 50, 1)
+    train_mse_list = []
+    dev_mse_list = []
+
+    for reg_param in reg_params:
+        # Train
+        model = Ridge(alpha=reg_param)
+        model.fit(train_x, train_y)
+
+        # Test
+        train_yhat = model.predict(train_x)
+        dev_yhat = model.predict(dev_x)
+
+        # Get metrics
+        train_yhat, dev_yhat = _get_estimates(train_yhat, dev_yhat)
+        train_mse = mean_squared_error(train_y, train_yhat)
+        dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+        # Save
+        train_mse_list.append(train_mse)
+        dev_mse_list.append(dev_mse)
+
+    # Plot
+    fig, ax = plt.subplots()
+    ax.set_title('MSE vs. regularization param')
+    ax.set_xlabel('Regularization param')
+    ax.set_ylabel('MSE')
+    ax.plot(reg_params, np.array(train_mse_list), label='Train MSE', marker='.')
+    ax.plot(reg_params, np.array(dev_mse_list), label='Dev MSE', marker='.')
+    plt.show()
+
+
+def train_polynomial_regression_red(train_x: DataFrame, train_y: Series, dev_x: DataFrame, dev_y: Series):
+    # Convert DF to arrays
+    train_x, dev_x = _get_x_arrays(train_x, dev_x, relevant_columns=red_wine_cols)
+    train_y, dev_y = _get_y_arrays(train_y, dev_y)
+
+    # Train
+    model = Ridge(alpha=28)
+    model.fit(train_x, train_y)
+
+    # Test
+    train_yhat = model.predict(train_x)
+    dev_yhat = model.predict(dev_x)
+
+    # Convert estimates to decisions
+    train_yhat = (train_yhat + .5).astype(int)
+    train_yhat[train_yhat > 10] = 10
+    train_yhat[train_yhat < 0] = 0
+    dev_yhat = (dev_yhat + .5).astype(int)
+    dev_yhat[dev_yhat > 10] = 10
+    dev_yhat[dev_yhat < 0] = 0
+
+    # Collect metrics
+    labels = np.arange(0, 11)
+    train_conf_mat = confusion_matrix(train_y, train_yhat, labels=labels)
+    dev_conf_mat = confusion_matrix(dev_y, dev_yhat, labels=labels)
+    train_f1_score = f1_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_f1_score = f1_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_precision_score = precision_score(train_y, train_yhat, labels=labels, average='weighted', zero_division=1)
+    dev_precision_score = precision_score(dev_y, dev_yhat, labels=labels, average='weighted', zero_division=1)
+    train_mse = mean_squared_error(train_y, train_yhat)
+    dev_mse = mean_squared_error(dev_y, dev_yhat)
+
+    # Visualize
+    fig, ((train_cm_ax, dev_cm_ax), (train_score_ax, dev_score_ax)) = plt.subplots(2, 2, height_ratios=[10, 1])
+    visualize_confusion_matrix(train_cm_ax, train_conf_mat)
+    visualize_confusion_matrix(dev_cm_ax, dev_conf_mat)
+    train_cm_ax.set_title('Train dataset CM')
+    dev_cm_ax.set_title('Dev dataset CM')
+    train_table = train_score_ax.table(cellText=[[f'{train_f1_score:.3f}'],
+                                                 [f'{train_precision_score:.3f}'],
+                                                 [f'{train_mse:.3f}']],
+                                       rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
+    train_table.scale(0.7, 1)
+    train_score_ax.axis('off')
+    dev_table = dev_score_ax.table(cellText=[[f'{dev_f1_score:.3f}'],
+                                             [f'{dev_precision_score:.3f}'],
+                                             [f'{dev_mse:.3f}']],
+                                   rowLabels=['F1-score', 'Precision score', 'MSE'], loc='center')
+    dev_table.scale(0.7, 1)
+    dev_score_ax.axis('off')
+
+    plt.show()
+
+
 def main():
     w_wine_train_df, w_wine_dev_df, w_wine_test_df = get_train_dev_test_white_wine()
     r_wine_train_df, r_wine_dev_df, r_wine_test_df = get_train_dev_test_red_wine()
@@ -650,7 +740,9 @@ def main():
     # plot_mse_vs_train_data_size(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
     # train_neural_network(w_wine_train_x, w_wine_train_y, w_wine_dev_x, w_wine_dev_y)
 
-    compare_feature_sets_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
+    # compare_feature_sets_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
+    # plot_mse_vs_reg_param_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
+    train_polynomial_regression_red(r_wine_train_x, r_wine_train_y, r_wine_dev_x, r_wine_dev_y)
 
 
 if __name__ == '__main__':

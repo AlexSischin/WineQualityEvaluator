@@ -361,3 +361,16 @@ Double-check:
 
 Now, the variance is non-existent! Train MSE is even greater than the dev MSE, so we're rather lucky to get such low
 variance. However, at this point it makes sense to try lower regularization params.
+
+![img_23.png](img_23.png)
+
+```text
+Function: plot_mse_vs_reg_param_red
+```
+
+Regularization param of 28 must be a bit better. Let's test the model.
+
+![img_24.png](img_24.png)
+
+Still, model has a bias towards 5 and 6 grades, but that's because the data is unbalanced and model can't find a
+sufficient relation between properties of wine and its quality.
