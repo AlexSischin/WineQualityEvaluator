@@ -374,3 +374,9 @@ Regularization param of 28 must be a bit better. Let's test the model.
 
 Still, model has a bias towards 5 and 6 grades, but that's because the data is unbalanced and model can't find a
 sufficient relation between properties of wine and its quality.
+
+We could try to build a DNN for red wine as well, but it's likely that red wine does not have a decent link between the
+properties we have and quality, as the white wine.
+
+Also, it doesn't make sense to apply transfer learning. Using transfer learning is similar to using more training
+examples. It could only help with high variance, but the variance of red wine model is excellent.
